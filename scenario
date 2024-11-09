@@ -1,0 +1,5 @@
+Hotel Management System:
+A Hotel Management System is a software built to handle all online hotel activities easily and safely. This System will give the hotel management power and flexibility to manage the entire system from a single online portal. The system allows the manager to keep track of all the available rooms in the system as well as to book rooms and generate bills.
+1. The system should support the booking of different room types like standard, deluxe, family suite, etc.
+2. Guests should be able to search the room inventory and book any available room.
+3. The system should be able to retrieve information, such as who booked a particular room, or what rooms were booked by a specific customer.

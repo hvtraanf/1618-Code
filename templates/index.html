@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Hotel Management System</h1>
+
+        <!-- Admin: Add New Room -->
+        <h2 class="text-xl font-semibold text-gray-600 mt-8 mb-4">Admin: Add New Room</h2>
+        <form id="add-room-form" class="mb-6">
+            <div class="mb-4">
+                <label for="new-room-type" class="block text-gray-700">Room Type</label>
+                <select id="new-room-type" class="w-full p-2 border border-gray-300 rounded" required>
+                    <option value="Standard Room">Standard Room</option>
+                    <option value="Deluxe Room">Deluxe Room</option>
+                    <option value="Family Suite">Family Suite</option>
+                    <option value="Executive Suite">Executive Suite</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="new-room-price" class="block text-gray-700">Price</label>
+                <input type="number" id="new-room-price" class="w-full p-2 border border-gray-300 rounded" step="0.01" required>
+            </div>
+            <div class="mb-4">
+                <label for="admin-password" class="block text-gray-700">Admin Password</label>
+                <input type="password" id="admin-password" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <button type="submit" class="bg-green-500 text-white p-2 rounded">Add Room</button>
+        </form>
+
+        <!-- Room List -->
+        <h2 class="text-xl font-semibold text-gray-600 mb-4">Available Rooms</h2>
+        <ul id="room-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></ul>
+
+        <!-- Booked Rooms List -->
+        <h2 class="text-xl font-semibold text-gray-600 mt-8 mb-4">Booked Rooms</h2>
+        <ul id="booked-rooms-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></ul>
+
+        <!-- Book a Room Form -->
+        <h2 class="text-xl font-semibold text-gray-600 mt-8 mb-4">Book a Room</h2>
+        <form id="book-room-form" class="mb-6">
+            <div class="mb-4">
+                <label for="room-type" class="block text-gray-700">Room Type</label>
+                <select id="room-type" class="w-full p-2 border border-gray-300 rounded" required>
+                    <option value="Standard Room">Standard Room</option>
+                    <option value="Deluxe Room">Deluxe Room</option>
+                    <option value="Family Suite">Family Suite</option>
+                    <option value="Executive Suite">Executive Suite</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="customer-name" class="block text-gray-700">Customer Name</label>
+                <input type="text" id="customer-name" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label for="check-in-date" class="block text-gray-700">Check-in Date</label>
+                <input type="date" id="check-in-date" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label for="check-out-date" class="block text-gray-700">Check-out Date</label>
+                <input type="date" id="check-out-date" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded">Book Room</button>
+        </form>
+    </div>
+
+    <script>
+        // Fetch and display available rooms
+        async function getRooms() {
+            const response = await fetch('/rooms?available=true');
+            const rooms = await response.json();
+            const roomList = document.getElementById('room-list');
+            roomList.innerHTML = '';
+
+            rooms.forEach(room => {
+                const roomItem = document.createElement('li');
+                roomItem.className = 'p-4 border border-gray-200 rounded-lg shadow-sm bg-white';
+                roomItem.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-700">Room ID: ${room.id}</h3>
+                    <p class="text-gray-700">Type: ${room.type}</p>
+                    <p class="text-gray-500">Price: $${room.price.toFixed(2)}</p>
+                    <p class="text-gray-500">Available: Yes</p>
+                `;
+                roomList.appendChild(roomItem);
+            });
+        }
+
+        // Fetch and display booked rooms
+        async function getBookedRooms() {
+            const response = await fetch('/bookings');
+            const bookings = await response.json();
+            const bookedRoomsList = document.getElementById('booked-rooms-list');
+            bookedRoomsList.innerHTML = '';
+
+            bookings.forEach(booking => {
+                const bookedRoomItem = document.createElement('li');
+                bookedRoomItem.className = 'p-4 border border-gray-200 rounded-lg shadow-sm bg-white';
+                bookedRoomItem.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-700">Booking ID: ${booking.id}</h3>
+                    <p class="text-gray-700">Room ID: ${booking.room_id}</p>
+                    <p class="text-gray-500">Customer Name: ${booking.customer_name}</p>
+                    <p class="text-gray-500">Check-in Date: ${booking.check_in_date}</p>
+                    <p class="text-gray-500">Check-out Date: ${booking.check_out_date}</p>
+                `;
+                bookedRoomsList.appendChild(bookedRoomItem);
+            });
+        }
+
+        // Handle adding a new room (admin only)
+        document.getElementById('add-room-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const type = document.getElementById('new-room-type').value;
+            const price = document.getElementById('new-room-price').value;
+            const password = document.getElementById('admin-password').value;
+
+            const response = await fetch('/rooms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: type,
+                    price: parseFloat(price),
+                    admin_password: password
+                })
+            });
+
+            if (response.ok) {
+                alert('New room added successfully!');
+                document.getElementById('add-room-form').reset();
+                getRooms();  // Refresh room list after adding a room
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+            }
+        });
+
+        // Handle booking a room
+        document.getElementById('book-room-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const roomType = document.getElementById('room-type').value;
+            const customerName = document.getElementById('customer-name').value;
+            const checkInDate = document.getElementById('check-in-date').value;
+            const checkOutDate = document.getElementById('check-out-date').value;
+
+            const response = await fetch('/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_type: roomType,
+                    customer_name: customerName,
+                    check_in_date: checkInDate,
+                    check_out_date: checkOutDate
+                })
+            });
+
+            if (response.ok) {
+                alert('Room booked successfully!');
+                document.getElementById('book-room-form').reset();
+                getRooms();  // Refresh the room list after booking
+                getBookedRooms();  // Refresh the booked rooms list
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+            }
+        });
+
+        // Initial fetch to display available rooms and booked rooms
+        getRooms();
+        getBookedRooms();
+    </script>
+</body>
+</html>
