@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from enum import Enum
 
+# Run python app.py in console to run
+
 app = Flask(__name__)
 
 # Enum for Room Types
